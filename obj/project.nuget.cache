@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "3xmJplsXpDk=",
+  "success": true,
+  "projectFilePath": "/Users/kewalshah/Code/dotnet/open-fga/open-fga.csproj",
+  "expectedPackageFiles": [
+    "/Users/kewalshah/.nuget/packages/openfga.sdk/0.5.1/openfga.sdk.0.5.1.nupkg.sha512",
+    "/Users/kewalshah/.nuget/packages/opentelemetry.api/1.9.0/opentelemetry.api.1.9.0.nupkg.sha512",
+    "/Users/kewalshah/.nuget/packages/system.diagnostics.diagnosticsource/8.0.0/system.diagnostics.diagnosticsource.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
