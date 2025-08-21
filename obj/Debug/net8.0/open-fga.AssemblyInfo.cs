@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("open-fga")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52912e774f12de9e2a2132cab80b56e47895c099")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e78236247788cff4c42e81601daf84915d92be0f")]
 [assembly: System.Reflection.AssemblyProductAttribute("open-fga")]
 [assembly: System.Reflection.AssemblyTitleAttribute("open-fga")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

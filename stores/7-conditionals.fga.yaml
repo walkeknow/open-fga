@@ -1,0 +1,231 @@
+# A system has a super admin. An organization is part of a system. a super admin also has admin privileges in all organizations within the system.
+
+model: |
+  model
+    schema 1.1
+    
+  type user
+
+  type system
+    relations
+      define super_admin : [user with time_based_grant]
+
+  type organization
+    relations
+      define system : [system]
+      define admin : [user] or super_admin from system
+      define can_edit_documents : admin
+
+  type group 
+    relations
+      define member : [user, group#member]
+
+  type folder
+    relations
+      define organization : [organization]
+      define parent: [folder]
+      define owner : [user]
+      define viewer: [user, group#member]
+      define editor: [user, group#member]
+
+      define can_edit : editor or owner or can_edit from parent or can_edit_documents from organization
+      define can_view : viewer or can_edit
+
+  type document
+    relations
+      define parent: [folder]
+      define viewer: [user, user:*] or viewer from parent
+      define owner : [user, group#member]
+      define editor: [user, group#member]
+      define published: [document]
+
+      define can_edit : editor or owner or can_edit from parent
+      define can_view : (viewer from published) or can_edit
+
+  condition time_based_grant(grant_time:timestamp, grant_duration:duration, current_time:timestamp) {
+    current_time < grant_time + grant_duration
+  }
+
+tuples:
+  # Tuples for basic example
+  - user: user:anne
+    object: folder:root
+    relation: owner
+
+  - user: folder:root
+    object: document:welcome
+    relation: parent
+
+  - user: user:bob
+    object: document:welcome
+    relation: owner
+
+  # Tuples for multi-tenancy example
+  - user: user:peter
+    object: organization:acme
+    relation: admin
+
+  - user: organization:acme
+    object: folder:root
+    relation: organization
+
+  # Tuples for groups example
+  - user: user:martin
+    object: group:engineering
+    relation: member
+
+  - user: group:engineering#member
+    object: group:everyone
+    relation: member
+
+  - user: group:everyone#member
+    object: folder:root
+    relation: editor
+
+  - user: user:*
+    object: document:public-roadmap
+    relation: viewer
+
+  - user: folder:root
+    relation: parent
+    object: document:public-roadmap
+
+  - user: user:jake
+    relation: member
+    object: group:qa_engineers
+
+  # Mark documents as published
+  - user: document:public-roadmap
+    relation: published
+    object: document:public-roadmap
+
+  - user: document:welcome
+    relation: published
+    object: document:welcome
+
+  - user: user:*
+    relation: viewer
+    object: document:draft-document
+
+  # Super admin
+
+  - user: user:charlie
+    relation: super_admin
+    object: system:acme_sys
+    condition:
+      name: time_based_grant
+      context:
+        grant_time: "2023-01-01T00:00:00Z"
+        grant_duration: 1h
+
+  - user: system:acme_sys
+    relation: system
+    object: organization:acme
+
+  - user: organization:acme
+    relation: organization
+    object: folder:acme_onboarding
+
+  - user: folder:acme_onboarding
+    relation: parent
+    object: document:draft-document
+
+  # Time based condition
+
+  - user: user:tango
+    relation: super_admin
+    object: system:acme_sys
+    condition:
+      name: time_based_grant
+      context:
+        grant_time: "2023-01-01T00:00:00Z"
+        grant_duration: 1h
+
+tests:
+  - name: Tests for basic example
+    check:
+      - user: user:anne
+        object: document:welcome
+        assertions:
+          can_edit: true
+          can_view: true
+
+      - user: user:bob
+        object: folder:root
+        assertions:
+          can_edit: false
+          can_view: false
+
+  - name: Tests for multi-tenancy
+    check:
+      - user: user:peter
+        object: folder:root
+        assertions:
+          can_edit: true
+          can_view: true
+
+      - user: user:peter
+        object: document:welcome
+        assertions:
+          can_edit: true
+          can_view: true
+
+  - name: Tests for groups
+    check:
+      - user: user:martin
+        object: document:welcome
+        assertions:
+          can_edit: true
+          can_view: true
+
+      - user: user:martin
+        object: folder:root
+        assertions:
+          can_edit: true
+          can_view: true
+
+  - name: Tests for public access
+    check:
+      - user: user:jake
+        object: document:public-roadmap
+        assertions:
+          can_edit: false
+          can_view: true
+      - user: user:jake
+        object: document:draft-document
+        assertions:
+          can_edit: false
+          can_view: false
+
+  - name: Test for super admin
+    check:
+      - user: user:charlie
+        object: folder:acme_onboarding
+        context:
+          current_time: "2023-01-01T00:30:00Z"
+        assertions:
+          can_edit: true
+          can_view: true
+      - user: user:charlie
+        object: document:draft-document
+        context:
+          current_time: "2023-01-01T00:30:00Z"
+        assertions:
+          can_edit: true
+          can_view: true
+  - name: Test for time-based super admin
+    check:
+      - user: user:tango
+        object: folder:acme_onboarding
+        context:
+          current_time: "2023-01-02T00:30:00Z"
+        assertions:
+          can_edit: false
+          can_view: false
+      - user: user:tango
+        object: document:draft-document
+        context:
+          current_time: "2023-01-02T00:30:00Z"
+        assertions:
+          can_edit: false
+          can_view: false

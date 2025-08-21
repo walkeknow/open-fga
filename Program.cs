@@ -8,6 +8,8 @@ namespace open_fga;
 
 class MyProgram
 {
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
     static async Task Main()
     {
         // Create config
@@ -96,9 +98,7 @@ class MyProgram
         var response4 = await fgaClient.ListObjects(body4);
         var response5 = await fgaClient.ListUsers(body5);
 
-        var options = new JsonSerializerOptions { WriteIndented = true };
-
         Console.WriteLine($"List objects result: {response4.ToJson()}");
-        Console.WriteLine($"List users result: {JsonSerializer.Serialize(response5, options)}");
+        Console.WriteLine($"List users result: {JsonSerializer.Serialize(response5, JsonOptions)}");
     }
 }

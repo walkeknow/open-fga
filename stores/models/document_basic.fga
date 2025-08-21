@@ -6,8 +6,14 @@ type user
 type document
     relations
         define reader: [user, user with temporal_access]
-        define editor: [user]
-        define owner: [user]
+        define editor: [user] or reader
+        define owner: [user] or editor
+
+type folder
+    relations
+        define reader: [user, user with temporal_access]
+        define editor: [user] or reader
+        define owner: [user] or editor
 
 condition temporal_access(grant_time: timestamp, grant_duration: duration, current_time: timestamp) {
     current_time < grant_time + grant_duration

@@ -1,0 +1,70 @@
+model: |
+  model
+
+  schema 1.2
+
+  type user
+
+  type organization
+    relations
+      define member: [user, organization#member]
+
+  type document
+    relations
+      define owner: [user, organization#member]
+      define editor: [user, organization#member]
+      define viewer: [user, organization#member]
+      define parent: [folder, drive]
+      define can_share: owner or editor or owner from parent
+      define can_edit: owner or editor or owner from parent
+      define can_view: owner or editor or viewer or viewer from parent or owner from parent
+      define can_create: owner from parent
+
+  type folder
+    relations
+      define owner: [user, organization#member]
+      define viewer: [user, organization#member]
+      define parent: [folder, drive]
+      define can_share: owner or owner from parent
+      define can_view: owner or viewer from parent or owner from parent
+      define can_create: owner from parent
+      define can_change_owner: owner
+
+  type drive
+    relations
+      define owner: [user, organization#member]
+      define viewer: [user, organization#member]
+
+tuples:
+  - user: user:alice
+    relation: owner
+    object: folder:folder1
+  - user: folder:folder1
+    relation: parent
+    object: document:doc1
+  - user: drive:drive1
+    relation: parent
+    object: folder:folder2
+  - user: user:alice
+    relation: member
+    object: organization:org1
+  - user: organization:org1#member
+    relation: viewer
+    object: drive:drive1
+  - user: folder:folder2
+    relation: parent
+    object: document:doc2
+
+tests:
+  - name: "Tests for document permissions"
+    check:
+      - user: user:alice
+        object: document:doc1
+        assertions:
+          can_edit: true
+          can_view: true
+      - user: user:alice
+        object: folder:folder2
+        assertions:
+          can_view: true
+          can_change_owner: false
