@@ -2,7 +2,7 @@
 
 ## Intro
 
-### What is Open FGA
+### **What is Open FGA**
 
 Fine-Grained Authorization (FGA) implies the ability to grant specific users permission to perform certain actions in specific resources
 
@@ -17,7 +17,7 @@ OpenFGA is a Scalable Auth System which allows:
   - Centralize authorization decisions and audit logs making it simpler to comply with security and compliance requirements.
   - Help their products to move faster because it is simpler to evolve authorization policies.
 
-### How is the data stored?
+### **How is the data stored?**
 
 In a store!
 
@@ -29,35 +29,35 @@ Data cannot be shared btw stores
 
 You will need to create a store in OpenFGA before adding an [authorization model](https://openfga.dev/docs/concepts#what-is-an-authorization-model) and [relationship tuples](https://openfga.dev/docs/concepts#what-is-a-relationship-tuple) to it.
 
-### What is an auth model?
+### **What is an auth model?**
 
 Rows that actually dictate who can do what and when
 
 Deserialize a json and feed it to fgaClient writeAuthModel() to add it to client.
 
-### Type
+### **Type**
 
 A string that defines a class of objects with similar characteristics
 
-### Relation
+### **Relation**
 
 Strings defined within a type definition (reader, writer)
 
-### Relation definition
+### **Relation definition**
 
 Things that need to happen for a relationship to exist [user]
 
-### Conditions
+### **Conditions**
 
 is a function composed of 1 or more parameters in an expression defined using the Google Common Expression Language (CEL)
 
-### Relationship Tupleslationship Tuple
+### **Relationship Tuple**
 
 A triplet containing a user, object, and a relation (and a condition)
 
 A tuple consisting of a user, an object, and a relation (and a condition).
 
-### Direct and implied relationships
+### **Direct and implied relationships**
 
 Direct relation
 
@@ -79,13 +79,13 @@ tuples:
 
 relationship bob↔editor↔doc1 is direct. bob↔viewer>doc1 is implied
 
-### Check request
+### **Check request**
 
 call to the openfga api, checking if user has a relationship w an obj
 
-### List Request
+### **List Request**
 
-A request to find out what's related
+A request to find out what’s related
 
 OpenFGA relies on Relationship-Based Access Control, which allows developers to easily implement Role-Based Access Control.
 
@@ -132,9 +132,9 @@ var body3 = new ClientCheckRequest
 };
 ```
 
-### Type bound public access
+### **Type bound public access**
 
-special syntax represented by `<type>:*` . Can only be used for users.
+special syntax represented by `<type>:*` . Can only be used for users.
 
 ```csharp
 {
@@ -154,9 +154,9 @@ Policy-Based Access Control (PBAC) is the ability to manage authorization polici
 
 [Relationship-Based Access Control](https://en.wikipedia.org/wiki/Relationship-based_access_control) (ReBAC) enables user access rules to be conditional on relations that a given user has with a given object *and* that object's relationship with other objects
 
-### Modeling
+## **Modeling Guide**
 
-The model defines the static blueprint of your authorization system - it's like the schema that describes what relationships are _possible_ between users and objects.
+The **model** defines the **static blueprint** of your authorization system - it's like the schema that describes what relationships are *possible* between users and objects.
 
 In your file, the model section defines:
 
@@ -167,9 +167,9 @@ model: |
     
   type user
 
-  type folder
+  type folder #object
     relations
-      define parent: [folder]
+      define parent: [folder] #relation: user
       define owner : [user]
       define viewer: [user]
       define editor: [user]
@@ -178,22 +178,22 @@ model: |
       define can_view : viewer or can_edit
 ```
 
-Key characteristics of models:
+**Key characteristics of models:**
 
-- Immutable: Each change creates a new version
-- Defines types: Like `user`, `folder`, `document`
-- Defines possible relations: Like `owner`, `editor`, `viewer`, `can_edit`
-- Defines authorization logic: How permissions are inherited and computed
-- Rarely changes: Only when new features are added
+- **Immutable**: Each change creates a new version
+- **Defines types**: Like `user`, `folder`, `document`
+- **Defines possible relations**: Like `owner`, `editor`, `viewer`, `can_edit`
+- **Defines authorization logic**: How permissions are inherited and computed
+- **Rarely changes**: Only when new features are added
 
-### Tuples: The Actual Relationship Data
+### **Tuples: The Actual Relationship Data**
 
-Relationship Tuples represent the dynamic facts about who actually has what relationships to which objects. These are the concrete assignments that make the model "come alive."
+**Tuples** represent the **dynamic facts** about who actually has what relationships to which objects. These are the concrete assignments that make the model "come alive."
 
 In your file:
 
 ```yaml
-tuples:
+**tuples:
   - user: user:anne
     object: folder:root
     relation: owner
@@ -204,19 +204,19 @@ tuples:
 
   - user: user:bob
     object: document:welcome
-    relation: owner
+    relation: owner**
 ```
 
-Key characteristics of tuples:
+**Key characteristics of tuples:**
 
-- Dynamic data: Can be added/removed frequently
-- Concrete facts: "Anne owns the root folder", "Bob owns the welcome document"
-- Required for authorization: Without tuples, all checks return false
-- Three parts: `user`, `relation`, `object`
+- **Dynamic data**: Can be added/removed frequently
+- **Concrete facts**: "Anne owns the root folder", "Bob owns the welcome document"
+- **Required for authorization**: Without tuples, all checks return false
+- **Three parts**: `user`, `relation`, `object`
 
-### Tests: Validation and Verification
+### **Tests: Validation and Verification**
 
-Tests verify that your model and tuples work together correctly by checking expected authorization outcomes.
+**Tests** verify that your model and tuples work together correctly by checking expected authorization outcomes.
 
 In your file:
 
@@ -231,25 +231,79 @@ tests:
           can_view: true
 ```
 
-Key characteristics of tests:
+**Key characteristics of tests:**
 
-- Validation: Ensure the model works as expected
-- Different types: `check`, `list_objects`, `list_users`
-- Assertions: Expected true/false results for permissions
-- Development tool: Help catch bugs before deployment
+- **Validation**: Ensure the model works as expected
+- **Different types**: `check`, `list_objects`, `list_users`
+- **Assertions**: Expected true/false results for permissions
+- **Development tool**: Help catch bugs before deployment
 
-### How They Work Together
+### **How They Work Together**
 
-1. Model says: "Folders can have owners, and owners can edit anything in folders they own"
-2. Tuples say: "Anne owns the root folder, and the welcome document is in the root folder"
-3. Tests verify: "Anne should be able to edit the welcome document" ✅
+1. **Model** says: "Folders can have owners, and owners can edit anything in folders they own"
+2. **Tuples** say: "Anne owns the root folder, and the welcome document is in the root folder"
+3. **Tests** verify: "Anne should be able to edit the welcome document" ✅
 
-### Real-World Analogy
+### **Real-World Analogy**
 
 Think of it like a database system:
 
-- Model = Database schema (table definitions, relationships)
-- Tuples = Actual data rows in the tables
-- Tests = Unit tests that verify queries return expected results
+- **Model** = Database schema (table definitions, relationships)
+- **Tuples** = Actual data rows in the tables
+- **Tests** = Unit tests that verify queries return expected results
 
-The model defines the _rules_, tuples provide the _facts_, and tests ensure everything works correctly together.
+The model defines the *rules*, tuples provide the *facts*, and tests ensure everything works correctly together.
+
+### Process for defining auth models
+
+1. [Pick the most important feature](https://openfga.dev/docs/modeling/getting-started#01-pick-the-most-important-feature)
+
+   > **A user {user} can perform action {action} to/on/in {object types} ... IF {conditions}**
+   > • A user can create a document in a drive if they are the owner of the drive.
+
+2. [List the object types](https://openfga.dev/docs/modeling/getting-started#02-list-the-object-types)
+
+   doc, folder, org, user
+
+3. [List relations for those types](https://openfga.dev/docs/modeling/getting-started#03-list-relations-for-those-types). Separate these 2:
+   1. any noun that is the {noun} of a "{noun} of a/an/the {type}" expression. These are typically the Foreign Keys in a database (eg. **`owner` of the drive)**
+   2. any verb or action that is the {action} of a "can {action} (in) a/an {type}" expression. **These are typically the permissions for a type. `can_create` a document in a drive**
+4. [Define relations](https://openfga.dev/docs/modeling/getting-started#04-define-relations)
+   1. Start from objects that represent groups/containers of users (eg. type organization)
+   2. continue with the most important type for the feature: the one that allows the main use case (eg. type document)
+   3. Do not define other types yet (test just these first)
+5. [Test the model](https://openfga.dev/docs/modeling/getting-started#05-test-the-model)
+
+   1. Write relationship tuples
+
+      eg.
+
+      ```csharp
+      { user:"user:anne", relation: "member", object: "organization:contoso"}
+      { user:"user:anne", relation: "owner", object: "document:1"}
+      { user:"organization:contoso#member", relation: "viewer", object: "document:2"}
+      ```
+
+   2. Create assertions
+      • user **anne** has relation **can_share** with document:1
+      • user **anne** does not have relation **can_share** with document:2
+
+6. [Iterate](https://openfga.dev/docs/modeling/getting-started#06-iterate)
+
+### Multitenency
+
+In multitenency we allow different orgs to access same system resources with complete data isolation
+
+### Groups
+
+Allows us to bundle users with similar permissions together
+
+### Relationship-based ABAC
+
+Relationship-based Attribute-based access control (ABAC) adds flexibility by making permissions follow users across documents
+
+## Super Admin
+
+Bypasses resource restrictions
+
+## Custom roles
